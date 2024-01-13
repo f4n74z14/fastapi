@@ -1,10 +1,24 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 
-from public.api import users
+from public.api import users, langs
+from repository import main_repo
 from responses import responses
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # On startup
+    await main_repo.init()
+
+    yield
+    # On shutdown
+
+
+app = FastAPI(lifespan=lifespan)
 app.include_router(users.router)
+app.include_router(langs.router)
 
 
 @app.get("/")
